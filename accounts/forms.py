@@ -189,3 +189,7 @@ class EmployeeProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["first_name", "last_name", "gender"]
+
+
+class ResetEmailForm(forms.Form):
+    email = forms.EmailField()
