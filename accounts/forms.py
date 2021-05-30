@@ -195,5 +195,5 @@ class ResetEmailForm(forms.Form):
     email = forms.EmailField()
     
 class ResetPasswordForm(forms.Form):
-    password = forms.PasswordInput()
-    password1 = forms.PasswordInput()
+    password = forms.CharField()
+    password1 = forms.CharField()
