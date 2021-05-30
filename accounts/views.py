@@ -135,15 +135,9 @@ def RequestResetEmail(request):
                 reset_password_url = f"http://{domain+link}"
                 
                 mail_subject = "Reset Password"
+
                 
-                """
-                message = render_to_string('auth/activate.html', {
-                    'user':user.username,
-                    'url':activate_url,
-                })
-                """
-                
-                mail_body = f"hi {user[0].username} click the link below to reset your password\n {reset_password_url}"
+                mail_body = f"hi click the link below to reset your password\n {reset_password_url}"
                 mail = send_mail (mail_subject, mail_body,'noreply@retech.com',[email], fail_silently=False)
                 messages.success(request, "Check your Email for the reset link")
                 return redirect('accounts:login')
@@ -153,26 +147,7 @@ def RequestResetEmail(request):
     form = ResetEmailForm()
     return render(request, 'accounts/reset_email_form.html', {'form':form})
   
-def ResetPasswordView(request, uidb64, token):
-    context = {
-        'uidb64':uidb64, 
-        'token':token
-        }
-    try:
-        user_id = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=user_id)
-        
-        if not PasswordResetTokenGenerator().check_token(user, token):
-            messages.error(request, "Opps, The link has expired")
-            return render(request, 'accounts/reset_email_form.html', {})
-            
-        
-        messages.success(request, "password changed successfully")
-        return redirect('user:login')
-    except DjangoUnicodeDecodeError as identifier:
-        messages.error(request, "oops! something went wrong")
-        return render(request, 'accounts/reset_password.html', context)
-    
+def ResetPasswordView(request, uidb64, token):   
     
     if request.method == 'POST':
         form = ResetPasswordForm(request.POST)
@@ -206,8 +181,28 @@ def ResetPasswordView(request, uidb64, token):
             user.set_password(password1)
             user.save()
             messages.success(request, "password changed successfully")
-            return redirect('user:login')
+            return redirect('accounts:login')
         except DjangoUnicodeDecodeError as identifier:
             messages.error(request, "oops! something went wrong")
             return render(request, 'accounts/reset_password.html', context)
+        
+    context = {
+        'uidb64':uidb64, 
+        'token':token,
+        'form':ResetPasswordForm()
+        }
+    try:
+        user_id = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=user_id)
+        
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            messages.error(request, "Opps, The link has expired")
+            return render(request, 'accounts/reset_email_form.html', {})
+            
+        
+        messages.success(request, "verified")
+        return render(request, 'accounts/reset_password.html', context)
+    except DjangoUnicodeDecodeError as identifier:
+        messages.error(request, "oops! something went wrong")
+        return render(request, 'accounts/login.html', context)
     return render(request, 'accounts/reset_password.html', context)
