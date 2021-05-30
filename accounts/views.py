@@ -175,13 +175,14 @@ def ResetPasswordView(request, uidb64, token):
     
     
     if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
         context = {
             'uidb64':uidb64,
             'token':token,
         }
         
-        password1 = request.POST['password1']
-        password2 = request.POST['password2']
+        password1 = form.cleaned_data['password']
+        password2 = form.cleaned_data['password1']
         
         if password1 == "":
             messages.error(request, "Password is required")
