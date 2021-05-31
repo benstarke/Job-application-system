@@ -151,40 +151,42 @@ def ResetPasswordView(request, uidb64, token):
     
     if request.method == 'POST':
         form = ResetPasswordForm(request.POST)
-        context = {
-            'uidb64':uidb64,
-            'token':token,
-        }
         
-        password1 = form.cleaned_data['password']
-        password2 = form.cleaned_data['password1']
+        if form.is_valid():
+            context = {
+                'uidb64':uidb64,
+                'token':token,
+            }
         
-        if password1 == "":
-            messages.error(request, "Password is required")
-        if password2 == "":
-            messages.error(request, "Repeat Password is required")
-            return render(request, 'accounts/reset_password.html', context)
-        if password1 != password2:
-            messages.error(request, "Passwords do not match")
-        if len(password1)<6:
-            messages.error(request,"Password is too short")
-            return render(request, 'accounts/reset_password.html', context)
-        if password1 != password2:
-            messages.error(request, "Passwords do not match")
-        if len(password1)<6:
-            messages.error(request,"Password is too short")
-            return render(request, 'accounts/reset_password.html', context)  
-        
-        try:
-            user_id = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=user_id)
-            user.set_password(password1)
-            user.save()
-            messages.success(request, "password changed successfully")
-            return redirect('accounts:login')
-        except DjangoUnicodeDecodeError as identifier:
-            messages.error(request, "oops! something went wrong")
-            return render(request, 'accounts/reset_password.html', context)
+            password1 = form.cleaned_data['password']
+            password2 = form.cleaned_data['password1']
+            
+            if password1 == "":
+                messages.error(request, "Password is required")
+            if password2 == "":
+                messages.error(request, "Repeat Password is required")
+                return render(request, 'accounts/reset_password.html', context)
+            if password1 != password2:
+                messages.error(request, "Passwords do not match")
+            if len(password1)<6:
+                messages.error(request,"Password is too short")
+                return render(request, 'accounts/reset_password.html', context)
+            if password1 != password2:
+                messages.error(request, "Passwords do not match")
+            if len(password1)<6:
+                messages.error(request,"Password is too short")
+                return render(request, 'accounts/reset_password.html', context)  
+            
+            try:
+                user_id = force_text(urlsafe_base64_decode(uidb64))
+                user = User.objects.get(pk=user_id)
+                user.set_password(password1)
+                user.save()
+                messages.success(request, "password changed successfully")
+                return redirect('accounts:login')
+            except DjangoUnicodeDecodeError as identifier:
+                messages.error(request, "oops! something went wrong")
+                return render(request, 'accounts/reset_password.html', context)
         
     context = {
         'uidb64':uidb64, 
