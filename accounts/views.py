@@ -29,7 +29,6 @@ class RegisterEmployeeView(CreateView):
     def post(self, request, *args, **kwargs):
 
         form = self.form_class(data=request.POST)
-        resume = request.POST['resume']
         if form.is_valid():
             user = form.save(commit=False)
             password = form.cleaned_data.get("password1")

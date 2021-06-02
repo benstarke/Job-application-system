@@ -52,6 +52,7 @@ class EmployeeRegistrationForm(UserCreationForm):
             "first_name",
             "last_name",
             "email",
+            "resume",
             "password1",
             "password2",
             "gender",
