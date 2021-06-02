@@ -10,6 +10,7 @@ class User(AbstractUser):
     username = None
     role = models.CharField(max_length=12, error_messages={"required": "Role must be provided"})
     gender = models.CharField(max_length=10, blank=True, null=True, default="")
+    resume = models.FileField(upload_to='media/resume/', null=True, blank=True)
     email = models.EmailField(
         unique=True,
         blank=False,
