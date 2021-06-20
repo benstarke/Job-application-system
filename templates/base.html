@@ -57,9 +57,9 @@
                     <li class="nav-item">
                         <a href="{% url 'jobs:jobs' %}" class="nav-link">Jobs</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a href="/{{ LANGUAGE_CODE }}/about-us/" class="nav-link">About Us</a>
-                    </li>
+                    </li> -->
                     {% if request.user.is_authenticated and request.user.role == 'employer' %}
                         <li class="nav-item dropdown">
                             <a id="clientZone" href="#" data-toggle="dropdown"

@@ -198,3 +198,15 @@ class ResetEmailForm(forms.Form):
 class ResetPasswordForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput())
     password1 = forms.CharField(widget=forms.PasswordInput())
+
+
+
+# Profile Form
+class ProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = [
+            'email', 
+            'email',
+            ]

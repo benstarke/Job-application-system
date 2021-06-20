@@ -18,6 +18,9 @@ urlpatterns = [
     ),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("login/", LoginView.as_view(), name="login"),
+
+    path('activate/<uidb64>/<token>/', ActivateAccount.as_view(), name='activate'),
+
     path('request-reset-email/', RequestResetEmail, name="request-reset-email"),
     path('reset-password/<uidb64>/<token>/', ResetPasswordView, name='reset-password'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

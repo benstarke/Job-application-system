@@ -12,31 +12,118 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 
+from django.utils.encoding import force_text
+from accounts.tokens import account_activation_token
+from django.urls import reverse_lazy
+from django.views.generic import View, UpdateView
 
-class RegisterEmployeeView(CreateView):
-    model = User
+
+from jobs.settings import EMAIL_HOST_USER
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+
+
+
+
+# Sign Up View
+class RegisterEmployeeView(View):
     form_class = EmployeeRegistrationForm
     template_name = "accounts/employee/register.html"
     success_url = "/"
 
     extra_context = {"title": "Register"}
 
-    def dispatch(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return HttpResponseRedirect(self.get_success_url())
-        return super().dispatch(self.request, *args, **kwargs)
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-
-        form = self.form_class(data=request.POST)
+        form = self.form_class(request.POST)
         if form.is_valid():
+
             user = form.save(commit=False)
-            password = form.cleaned_data.get("password1")
-            user.set_password(password)
+            user.is_active = False # Deactivate account till it is confirmed
             user.save()
-            return redirect("accounts:login")
+
+            current_site = get_current_site(request)
+            # current_site = domain
+            subject = 'Activate Your Job Recruitment Account'
+            message = render_to_string('accounts/employee/account_activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            user.email_user(subject, message)
+
+            messages.success(request, ('Please Confirm your email to complete registration.'))
+
+            return redirect('login')
+
+        return render(request, self.template_name, {'form': form})
+
+
+class ActivateAccount(View):
+
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and account_activation_token.check_token(user, token):
+            user.is_active = True
+            user.profile.email_confirmed = True
+            user.save()
+            login(request, user)
+            msg = "Your account have been confirmed. Your uploaded CV has been received. Wait for confrimation after verification."
+            messages.success(request, (msg))
+            return redirect('home')
         else:
-            return render(request, "accounts/employee/register.html", {"form": form})
+            messages.warning(request, ('The confirmation link was invalid, possibly because it has already been used.'))
+            return redirect('home')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class RegisterEmployeeView(CreateView):
+#     model = User
+#     form_class = EmployeeRegistrationForm
+#     template_name = "accounts/employee/register.html"
+#     success_url = "/"
+
+#     extra_context = {"title": "Register"}
+
+#     def dispatch(self, request, *args, **kwargs):
+#         if self.request.user.is_authenticated:
+#             return HttpResponseRedirect(self.get_success_url())
+#         return super().dispatch(self.request, *args, **kwargs)
+
+#     def post(self, request, *args, **kwargs):
+
+#         form = self.form_class(data=request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             password = form.cleaned_data.get("password1")
+#             user.set_password(password)
+#             user.save()
+#             return redirect("accounts:login")
+#         else:
+#             return render(request, "accounts/employee/register.html", {"form": form})
 
 
 class RegisterEmployerView(CreateView):
